@@ -33,7 +33,8 @@ export default function Navbar({open, setOpen}: NavbarProps) {
         setPasswordError(false);
       }
     }
-  }, [password, confirmPassword]);
+    console.log(email);
+  }, [password, confirmPassword, email]);
 
   return (
     <>
