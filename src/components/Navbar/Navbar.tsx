@@ -12,6 +12,7 @@ import {
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
+import Link from "next/link";
 
 interface NavbarProps {
   open: boolean;
@@ -117,7 +118,6 @@ export default function Navbar({ open, setOpen }: NavbarProps) {
         resetForm();
         setOpen(false);
       }
-
     } catch (err) {
       setError(
         err instanceof Error
@@ -156,15 +156,26 @@ export default function Navbar({ open, setOpen }: NavbarProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <span className="text-2xl font-extrabold tracking-tight text-highlight-blue select-none">
+              <Link
+                href="/"
+                className="text-2xl font-extrabold tracking-tight text-highlight-blue select-none hover:cursor-pointer"
+              >
                 SuiteProp
-              </span>
+              </Link>
             </div>
             <div className="flex items-center space-x-4">
               {isLoggedIn && (
-                <span className="text-sm text-gray-400">
-                  Welcome, {userEmail}
-                </span>
+                <>
+                  <span className="text-sm text-gray-400">
+                    Welcome, {userEmail}
+                  </span>
+                  <Link
+                    href="/dashboard"
+                    className="text-default-font hover:text-highlight-blue px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
+                  >
+                    Dashboard
+                  </Link>
+                </>
               )}
               {isLoggedIn ? (
                 <Button
@@ -250,7 +261,9 @@ export default function Navbar({ open, setOpen }: NavbarProps) {
                           <div className="grid gap-2">
                             <Label htmlFor="password-2">Confirm Password</Label>
                             <Input
-                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              onChange={(e) =>
+                                setConfirmPassword(e.target.value)
+                              }
                               value={confirmPassword}
                               id="password-2"
                               type="password"
@@ -273,11 +286,11 @@ export default function Navbar({ open, setOpen }: NavbarProps) {
                       ) : (
                         <></>
                       )}
-                      
+
                       {error && (
                         <div className="text-red-500 text-sm">{error}</div>
                       )}
-                      
+
                       {success && (
                         <div className="text-green-500 text-sm">{success}</div>
                       )}
