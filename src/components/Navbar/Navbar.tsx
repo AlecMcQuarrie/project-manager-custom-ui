@@ -14,11 +14,11 @@ import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 
 interface NavbarProps {
-    open: boolean;
-    setOpen: React.Dispatch<SetStateAction<boolean>>;
+  open: boolean;
+  setOpen: React.Dispatch<SetStateAction<boolean>>;
 }
 
-export default function Navbar({open, setOpen}: NavbarProps) {
+export default function Navbar({ open, setOpen }: NavbarProps) {
   const [registration, setRegistration] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -63,7 +63,11 @@ export default function Navbar({open, setOpen}: NavbarProps) {
     setIsLoading(true);
 
     try {
-      const response = await fetch("https://project-manager-api-blush.vercel.app/auth/signup", {
+      const endpoint = registration
+        ? "https://project-manager-api-blush.vercel.app/auth/signup"
+        : "https://project-manager-api-blush.vercel.app/auth/login";
+
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -77,23 +81,39 @@ export default function Navbar({open, setOpen}: NavbarProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Registration failed");
+        throw new Error(
+          data.message || `${registration ? "Registration" : "Login"} failed`
+        );
       }
 
-      setSuccess("Registration successful! You can now sign in.");
-      setEmail("");
-      setPassword("");
-      setConfirmPassword("");
-      setRegistration(false);
-      
-      // Close dialog after 2 seconds
-      setTimeout(() => {
-        setOpen(false);
-        setSuccess("");
-      }, 2000);
+      if (registration) {
+        setSuccess("Registration successful! You can now sign in.");
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
+        setRegistration(false);
 
+        // Close dialog after 2 seconds
+        setTimeout(() => {
+          setOpen(false);
+          setSuccess("");
+        }, 2000);
+      } else {
+        setSuccess("Login successful! Welcome back.");
+        // Close dialog after 1 second
+        setTimeout(() => {
+          setOpen(false);
+          setSuccess("");
+        }, 1000);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred during registration");
+      setError(
+        err instanceof Error
+          ? err.message
+          : `An error occurred during ${
+              registration ? "registration" : "login"
+            }`
+      );
     } finally {
       setIsLoading(false);
     }
@@ -119,12 +139,15 @@ export default function Navbar({open, setOpen}: NavbarProps) {
               </span>
             </div>
             <div className="flex space-x-4">
-              <Dialog open={open} onOpenChange={(newOpen) => {
-                setOpen(newOpen);
-                if (!newOpen) {
-                  resetForm();
-                }
-              }}>
+              <Dialog
+                open={open}
+                onOpenChange={(newOpen) => {
+                  setOpen(newOpen);
+                  if (!newOpen) {
+                    resetForm();
+                  }
+                }}
+              >
                 <DialogTrigger className="text-default-font hover:text-highlight-blue px-3 py-2 rounded-md text-sm font-medium cursor-pointer">
                   Sign In
                 </DialogTrigger>
@@ -214,28 +237,34 @@ export default function Navbar({open, setOpen}: NavbarProps) {
                     ) : (
                       <></>
                     )}
-                    
+
                     {error && (
-                      <div className="text-red-500 text-sm">
-                        {error}
-                      </div>
-                    )}
-                    
-                    {success && (
-                      <div className="text-green-500 text-sm">
-                        {success}
-                      </div>
+                      <div className="text-red-500 text-sm">{error}</div>
                     )}
 
-                    {registration && (
-                      <Button 
-                        type="submit" 
-                        disabled={isLoading || passwordError || !email || !password || !confirmPassword}
-                        className="w-full"
-                      >
-                        {isLoading ? "Creating account..." : "Create Account"}
-                      </Button>
+                    {success && (
+                      <div className="text-green-500 text-sm">{success}</div>
                     )}
+
+                    <Button
+                      type="submit"
+                      disabled={
+                        isLoading ||
+                        (registration && passwordError) ||
+                        !email ||
+                        !password ||
+                        (registration && !confirmPassword)
+                      }
+                      className="w-full"
+                    >
+                      {isLoading
+                        ? registration
+                          ? "Creating account..."
+                          : "Signing in..."
+                        : registration
+                        ? "Create Account"
+                        : "Sign In"}
+                    </Button>
                   </form>
                 </DialogContent>
               </Dialog>
