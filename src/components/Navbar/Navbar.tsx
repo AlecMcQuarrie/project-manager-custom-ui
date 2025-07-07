@@ -27,6 +27,18 @@ export default function Navbar({ open, setOpen }: NavbarProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
+
+  // Check if user is logged in on component mount
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    const storedEmail = localStorage.getItem("userEmail");
+    if (token && storedEmail) {
+      setIsLoggedIn(true);
+      setUserEmail(storedEmail);
+    }
+  }, []);
 
   useEffect(() => {
     if (registration) {
@@ -92,20 +104,20 @@ export default function Navbar({ open, setOpen }: NavbarProps) {
         setPassword("");
         setConfirmPassword("");
         setRegistration(false);
-
-        // Close dialog after 2 seconds
-        setTimeout(() => {
-          setOpen(false);
-          setSuccess("");
-        }, 2000);
       } else {
         setSuccess("Login successful! Welcome back.");
-        // Close dialog after 1 second
-        setTimeout(() => {
-          setOpen(false);
-          setSuccess("");
-        }, 1000);
       }
+
+      // Store authentication data
+      if (data.token) {
+        localStorage.setItem("authToken", data.token);
+        localStorage.setItem("userEmail", email);
+        setIsLoggedIn(true);
+        setUserEmail(email);
+        resetForm();
+        setOpen(false);
+      }
+
     } catch (err) {
       setError(
         err instanceof Error
@@ -117,6 +129,16 @@ export default function Navbar({ open, setOpen }: NavbarProps) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSignOut = () => {
+    // Clear authentication data
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userEmail");
+    setIsLoggedIn(false);
+    setUserEmail("");
+    resetForm();
+    setOpen(false);
   };
 
   const resetForm = () => {
@@ -138,136 +160,151 @@ export default function Navbar({ open, setOpen }: NavbarProps) {
                 SuiteProp
               </span>
             </div>
-            <div className="flex space-x-4">
-              <Dialog
-                open={open}
-                onOpenChange={(newOpen) => {
-                  setOpen(newOpen);
-                  if (!newOpen) {
-                    resetForm();
-                  }
-                }}
-              >
-                <DialogTrigger className="text-default-font hover:text-highlight-blue px-3 py-2 rounded-md text-sm font-medium cursor-pointer">
-                  Sign In
-                </DialogTrigger>
-                <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
-                  <DialogHeader>
-                    <DialogTitle>
-                      {registration ? "Register" : "Sign In"}
-                    </DialogTitle>
-                    <DialogDescription>
+            <div className="flex items-center space-x-4">
+              {isLoggedIn && (
+                <span className="text-sm text-gray-400">
+                  Welcome, {userEmail}
+                </span>
+              )}
+              {isLoggedIn ? (
+                <Button
+                  onClick={handleSignOut}
+                  variant="outline"
+                  className="text-default-font hover:text-highlight-blue px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
+                >
+                  Sign Out
+                </Button>
+              ) : (
+                <Dialog
+                  open={open}
+                  onOpenChange={(newOpen) => {
+                    setOpen(newOpen);
+                    if (!newOpen) {
+                      resetForm();
+                    }
+                  }}
+                >
+                  <DialogTrigger className="text-default-font hover:text-highlight-blue px-3 py-2 rounded-md text-sm font-medium cursor-pointer">
+                    Sign In
+                  </DialogTrigger>
+                  <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
+                    <DialogHeader>
+                      <DialogTitle>
+                        {registration ? "Register" : "Sign In"}
+                      </DialogTitle>
+                      <DialogDescription>
+                        {registration ? (
+                          <>
+                            Back to{" "}
+                            <span
+                              onClick={() => {
+                                setRegistration(false);
+                                resetForm();
+                              }}
+                              className="cursor-pointer text-highlight-blue hover:underline"
+                            >
+                              Sign In.
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            New here?{" "}
+                            <span
+                              onClick={() => {
+                                setRegistration(true);
+                                resetForm();
+                              }}
+                              className="cursor-pointer text-highlight-blue hover:underline"
+                            >
+                              Register now.
+                            </span>
+                          </>
+                        )}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleSubmit} className="grid gap-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="email-1">Email</Label>
+                        <Input
+                          onChange={(e) => setEmail(e.target.value)}
+                          value={email}
+                          id="email-1"
+                          type="email"
+                          placeholder="someone@example.com"
+                          disabled={isLoading}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="password-1">Password</Label>
+                        <Input
+                          onChange={(e) => setPassword(e.target.value)}
+                          value={password}
+                          id="password-1"
+                          type="password"
+                          placeholder="Your password"
+                          disabled={isLoading}
+                        />
+                      </div>
                       {registration ? (
                         <>
-                          Back to{" "}
-                          <span
-                            onClick={() => {
-                              setRegistration(false);
-                              resetForm();
-                            }}
-                            className="cursor-pointer text-highlight-blue hover:underline"
-                          >
-                            Sign In.
-                          </span>
+                          <div className="grid gap-2">
+                            <Label htmlFor="password-2">Confirm Password</Label>
+                            <Input
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              value={confirmPassword}
+                              id="password-2"
+                              type="password"
+                              placeholder="Confirm your password"
+                              disabled={isLoading}
+                            />
+                          </div>
+                          <div>
+                            {passwordError ? (
+                              <>
+                                <Label className="text-error">
+                                  Your passwords do not match.
+                                </Label>
+                              </>
+                            ) : (
+                              <></>
+                            )}
+                          </div>
                         </>
                       ) : (
-                        <>
-                          New here?{" "}
-                          <span
-                            onClick={() => {
-                              setRegistration(true);
-                              resetForm();
-                            }}
-                            className="cursor-pointer text-highlight-blue hover:underline"
-                          >
-                            Register now.
-                          </span>
-                        </>
+                        <></>
                       )}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <form onSubmit={handleSubmit} className="grid gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="email-1">Email</Label>
-                      <Input
-                        onChange={(e) => setEmail(e.target.value)}
-                        value={email}
-                        id="email-1"
-                        type="email"
-                        placeholder="someone@example.com"
-                        disabled={isLoading}
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="password-1">Password</Label>
-                      <Input
-                        onChange={(e) => setPassword(e.target.value)}
-                        value={password}
-                        id="password-1"
-                        type="password"
-                        placeholder="Your password"
-                        disabled={isLoading}
-                      />
-                    </div>
-                    {registration ? (
-                      <>
-                        <div className="grid gap-2">
-                          <Label htmlFor="password-2">Confirm Password</Label>
-                          <Input
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            value={confirmPassword}
-                            id="password-2"
-                            type="password"
-                            placeholder="Confirm your password"
-                            disabled={isLoading}
-                          />
-                        </div>
-                        <div>
-                          {passwordError ? (
-                            <>
-                              <Label className="text-error">
-                                Your passwords do not match.
-                              </Label>
-                            </>
-                          ) : (
-                            <></>
-                          )}
-                        </div>
-                      </>
-                    ) : (
-                      <></>
-                    )}
+                      
+                      {error && (
+                        <div className="text-red-500 text-sm">{error}</div>
+                      )}
+                      
+                      {success && (
+                        <div className="text-green-500 text-sm">{success}</div>
+                      )}
 
-                    {error && (
-                      <div className="text-red-500 text-sm">{error}</div>
-                    )}
-
-                    {success && (
-                      <div className="text-green-500 text-sm">{success}</div>
-                    )}
-
-                    <Button
-                      type="submit"
-                      disabled={
-                        isLoading ||
-                        (registration && passwordError) ||
-                        !email ||
-                        !password ||
-                        (registration && !confirmPassword)
-                      }
-                      className="w-full"
-                    >
-                      {isLoading
-                        ? registration
-                          ? "Creating account..."
-                          : "Signing in..."
-                        : registration
-                        ? "Create Account"
-                        : "Sign In"}
-                    </Button>
-                  </form>
-                </DialogContent>
-              </Dialog>
+                      <Button
+                        type="submit"
+                        disabled={
+                          isLoading ||
+                          (registration && passwordError) ||
+                          !email ||
+                          !password ||
+                          (registration && !confirmPassword)
+                        }
+                        className="w-full"
+                      >
+                        {isLoading
+                          ? registration
+                            ? "Creating account..."
+                            : "Signing in..."
+                          : registration
+                          ? "Create Account"
+                          : "Sign In"}
+                      </Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
           </div>
         </div>
