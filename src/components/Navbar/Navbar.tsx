@@ -33,12 +33,33 @@ export default function Navbar({ open, setOpen }: NavbarProps) {
 
   // Check if user is logged in on component mount
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    const storedEmail = localStorage.getItem("userEmail");
-    if (token && storedEmail) {
-      setIsLoggedIn(true);
-      setUserEmail(storedEmail);
-    }
+    const checkAuthStatus = () => {
+      const token = localStorage.getItem("authToken");
+      const storedEmail = localStorage.getItem("userEmail");
+      if (token && storedEmail) {
+        setIsLoggedIn(true);
+        setUserEmail(storedEmail);
+      } else {
+        setIsLoggedIn(false);
+        setUserEmail("");
+      }
+    };
+
+    // Check initial status
+    checkAuthStatus();
+
+    // Listen for storage changes (when auth token is removed)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "authToken" || e.key === "userEmail") {
+        checkAuthStatus();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   useEffect(() => {
