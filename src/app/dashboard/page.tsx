@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar/Navbar";
 import AdminPanel from "./AdminPanel";
+import ManagerPanel from "./ManagerPanel";
 
 export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
@@ -14,20 +15,23 @@ export default function Dashboard() {
   useEffect(() => {
     const verifyAuth = async () => {
       const token = localStorage.getItem("authToken");
-      
+
       if (!token) {
         router.push("/");
         return;
       }
 
       try {
-        const response = await fetch("https://project-manager-api-blush.vercel.app/auth/me", {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          "https://project-manager-api-blush.vercel.app/auth/me",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (!response.ok) {
           // Token is invalid or expired
@@ -41,7 +45,6 @@ export default function Dashboard() {
         setUser(userData.user);
         setIsLoading(false);
       } catch (error) {
-        console.error("Auth verification failed:", error);
         localStorage.removeItem("authToken");
         localStorage.removeItem("userEmail");
         router.push("/");
@@ -64,11 +67,13 @@ export default function Dashboard() {
   return (
     <>
       <Navbar open={open} setOpen={setOpen} />
-      {
-        user && user.role === "admin" ? (
-          <AdminPanel />
-        ) : <></>
-      }
+      {user && user.role === "admin" ? (
+        <AdminPanel />
+      ) : user && user.role === "manager" ? (
+        <ManagerPanel />
+      ) : (
+        <></>
+      )}
     </>
   );
 }
