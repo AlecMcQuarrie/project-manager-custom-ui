@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar/Navbar";
 import AdminPanel from "./AdminPanel";
 import ManagerPanel from "./ManagerPanel";
+import { User } from "@/lib/types";
 
 export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
