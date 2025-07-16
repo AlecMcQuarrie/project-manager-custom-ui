@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar/Navbar";
 import AdminPanel from "./AdminPanel";
-import ManagerPanel from "./ManagerPanel";
+import ManagerPanel from "./ManagerPanel/ManagerPanel";
 import { User } from "@/lib/types";
 
 export default function Dashboard() {
