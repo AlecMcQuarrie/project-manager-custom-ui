@@ -31,8 +31,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Card, CardContent, CardHeader } from "../../components/ui";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 export default function ManagerPanel() {
   const totalUnits = demoUnits.length;

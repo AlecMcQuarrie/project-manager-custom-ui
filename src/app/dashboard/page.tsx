@@ -8,7 +8,7 @@ import ManagerPanel from "./ManagerPanel";
 
 export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState(null);
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -44,7 +44,7 @@ export default function Dashboard() {
         const userData = await response.json();
         setUser(userData.user);
         setIsLoading(false);
-      } catch (error) {
+      } catch {
         localStorage.removeItem("authToken");
         localStorage.removeItem("userEmail");
         router.push("/");
